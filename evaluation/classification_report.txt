@@ -1,0 +1,10 @@
+                  precision    recall  f1-score   support
+
+         Healthy       0.99      1.00      1.00       218
+Bacterial Blight       0.99      0.93      0.96       150
+     Anthracnose       0.99      0.99      0.99       175
+       Fruit Rot       0.96      0.99      0.98       301
+
+        accuracy                           0.98       844
+       macro avg       0.98      0.98      0.98       844
+    weighted avg       0.98      0.98      0.98       844

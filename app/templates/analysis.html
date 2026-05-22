@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Result - PomegranateGuard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <nav class="navbar">
+        <h2>PomegranateGuard</h2>
+        <div class="nav-links">
+            <div id="google_translate_element"></div>
+            <a href="{{ url_for('dashboard') }}">Scanner</a>
+            <a href="{{ url_for('symptom_checker') }}">Symptom Checker</a>
+            <a href="{{ url_for('library') }}">Disease Library</a>
+            <a href="{{ url_for('logout') }}" class="nav-btn">Logout</a>
+        </div>
+    </nav>
+
+    <div class="analysis-container">
+        <!-- Image View (If applicable) -->
+        {% if image_path %}
+        <div class="image-section">
+            <img src="{{ url_for('static', filename=image_path) }}" class="analysis-image" alt="Uploaded Image">
+        </div>
+        {% endif %}
+
+        <!-- Results View -->
+        <div class="result-section" {% if not image_path %}style="width: 100%; max-width: 800px; margin: auto;"{% endif %}>
+            <div class="result-header">
+                <h1>{{ prediction }}</h1>
+                <div class="metrics-container">
+                    <div class="confidence-circle" style="--percentage: {{ confidence }}%;">
+                        <span>{{ confidence }}%</span>
+                    </div>
+                    <div class="severity-badge {{ severity }}">
+                        Severity: {{ severity }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3><i class="fas fa-microscope"></i> Disease Description</h3>
+                <p>{{ description }}</p>
+            </div>
+
+            <div class="info-card">
+                <h3><i class="fas fa-shield-virus"></i> Prevention & Treatment</h3>
+                <p>{{ prevention }}</p>
+            </div>
+
+            <a href="{{ url_for('dashboard') }}" style="text-decoration: none;">
+                <button class="main-btn" style="margin-top: 10px;">Scan Another</button>
+            </a>
+        </div>
+    </div>
+
+    <!-- Font Awesome -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    
+    <!-- Google Translate Script -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({pageLanguage: 'en', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+</body>
+</html>

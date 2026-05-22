@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - PomegranateGuard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="auth-body">
+
+    <!-- Google Translate Widget -->
+    <div style="position: absolute; top: 20px; right: 20px; z-index: 1000;" id="google_translate_element"></div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-container">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="auth-card">
+        <h1>Create Account</h1>
+        <p>Join PomegranateGuard to analyze crops</p>
+
+        <form action="{{ url_for('signup') }}" method="POST">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Enter your username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" 
+                       pattern="^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$" 
+                       title="Please enter a valid email address"
+                       placeholder="Enter your email" required>
+                <span class="error-text">Please enter a valid email address.</span>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <!-- Regex: Minimum 8 characters, at least one letter, one number and one special character -->
+                <input type="password" id="password" name="password" 
+                       pattern="^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$" 
+                       title="Password must be at least 8 characters, and include a number and a special character"
+                       placeholder="Create a strong password" required>
+                <span class="error-text">Min 8 chars, 1 letter, 1 number, 1 special character.</span>
+            </div>
+
+            <button type="submit" class="main-btn">Sign Up</button>
+        </form>
+
+        <a href="{{ url_for('login') }}" class="auth-link">Already have an account? Log In</a>
+    </div>
+
+    <!-- Google Translate Script -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({pageLanguage: 'en', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+</body>
+</html>

@@ -1,0 +1,13 @@
+Test Accuracy: 0.9585307836532593
+
+Classification Report:
+                  precision    recall  f1-score   support
+
+         Healthy       0.31      0.32      0.32       218
+Bacterial Blight       0.20      0.17      0.18       150
+     Anthracnose       0.21      0.21      0.21       175
+       Fruit Rot       0.34      0.37      0.35       301
+
+        accuracy                           0.29       844
+       macro avg       0.27      0.27      0.27       844
+    weighted avg       0.28      0.29      0.28       844

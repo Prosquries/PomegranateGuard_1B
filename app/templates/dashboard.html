@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - PomegranateGuard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <h2>PomegranateGuard</h2>
+        <div class="nav-links">
+            <div id="google_translate_element"></div>
+            <a href="{{ url_for('symptom_checker') }}">Symptom Checker</a>
+            <a href="{{ url_for('library') }}">Disease Library</a>
+            <a href="{{ url_for('logout') }}" class="nav-btn">Logout</a>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="upload-card">
+            <h1>Diagnostic Scanner</h1>
+            <p class="subtitle">Upload an image or use your camera to scan a pomegranate fruit.</p>
+
+            <div class="action-buttons">
+                <button type="button" class="sec-btn" id="startCameraBtn">
+                    <i class="fas fa-camera"></i> Use Camera
+                </button>
+            </div>
+
+            <!-- Camera Container (Hidden by default) -->
+            <div id="camera-container" style="display: none; margin-bottom: 20px;">
+                <video id="video" autoplay playsinline></video>
+                <button type="button" class="main-btn" id="snapBtn" style="margin-top: 10px;">
+                    <i class="fas fa-camera"></i> Snap Photo
+                </button>
+                <canvas id="canvas"></canvas>
+            </div>
+
+            <form method="POST" action="{{ url_for('predict') }}" enctype="multipart/form-data" id="uploadForm">
+                <div class="drop-zone" id="dropZone">
+                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                    <p>Drag & Drop your image here or <strong>Click to Browse</strong></p>
+                    <input type="file" name="file" id="fileInput" accept="image/*" required>
+                    <img id="preview" alt="Image Preview">
+                </div>
+
+                <button type="submit" class="main-btn" id="analyzeBtn" style="margin-top: 30px;">
+                    <span id="btnText">Analyze Disease</span>
+                    <span class="spinner" id="btnSpinner" style="display: none;"></span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Google Translate Script -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({ pageLanguage: 'en', layout: google.translate.TranslateElement.InlineLayout.SIMPLE }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript"
+        src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+
+</html>

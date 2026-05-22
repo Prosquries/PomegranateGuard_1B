@@ -1,0 +1,4 @@
+Best Learning Rate: 0.0006146065009157053
+Best Dropout Rate: 0.39183388404167396
+Best Filters: 16
+Best Validation Accuracy: 0.8899999856948853
