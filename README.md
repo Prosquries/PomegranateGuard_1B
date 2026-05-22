@@ -19,20 +19,17 @@ PomegranateGuard is a deep learning-based Full-Stack Web Application designed to
 
 ## 📥 Prerequisites & Setup
 
-Due to GitHub's file size limits, the large dataset and trained models are **not included** in this repository. You must download them manually to run the application.
-
 ### 1. Clone the Repository
 ```bash
 git clone https://github.com/Prosquries/PomegranateGuard_1B.git
 cd PomegranateGuard_1B
 ```
 
-### 2. Download Missing Assets
-Download the following folders from the [Google Drive Project Folder](https://drive.google.com/drive/u/1/folders/1oFR9ssk2eakVTN3HyXgg7X1zCOUfcb-F):
-1.  **`model/`**: Required to run the application.
-2.  **`dataset/`**: Required only if you plan to retrain the models.
+**Note on Models:** The trained models (`.h5` files) are now included in this repository. Note that some files (like `pomegranate_cnn.h5`) exceed 100MB and require **Git LFS** (Large File Storage) to be pushed to GitHub.
 
-Place the `model/` and `dataset/` folders in the root of the project directory.
+### 2. Download Missing Datasets (Optional)
+The raw dataset is still hosted externally due to its size.
+Download the **`dataset/`** folder from the [Google Drive Project Folder](https://drive.google.com/drive/u/1/folders/1oFR9ssk2eakVTN3HyXgg7X1zCOUfcb-F) if you plan to retrain the models.
 
 ### 3. Environment Setup (Linux/macOS)
 It is highly recommended to use Python 3.12.
