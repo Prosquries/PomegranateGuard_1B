@@ -41,7 +41,9 @@ It is highly recommended to use Python 3.12.
 cd app
 python3.12 -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.txt - For Linux
+
+python -m pip install -r requirements.txt - For Windows
 ```
 
 ### 4. Link the Models
