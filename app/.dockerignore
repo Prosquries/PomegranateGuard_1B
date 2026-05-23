@@ -1,0 +1,14 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.db
+instance/
+.github/
+tests/
+.ipynb_checkpoints/
+.git/
+.gitignore
+Dockerfile
+.dockerignore
