@@ -8,15 +8,21 @@ from tensorflow.keras.preprocessing import image
 import numpy as np
 import os
 
+import os
+import logging
+
 app = Flask(__name__)
+
+# Set up logging to see errors in Hugging Face logs
+logging.basicConfig(level=logging.INFO)
+logger = app.logger
 
 UPLOAD_FOLDER = "static/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
-# Use a random secret key for sessions to ensure they are secure and unique to each run
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', os.urandom(24))
-# Simpler relative path often works better with SQLite in Docker containers
+# Use a static secret key for testing to avoid session resets
+app.config['SECRET_KEY'] = 'pomegranate_guard_secret_key_123'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/site.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -34,13 +40,20 @@ class User(db.Model):
 
 with app.app_context():
     db.create_all()
-    # Create a default test user if it doesn't exist
     test_email = "admin@test.com"
     if not User.query.filter_by(email=test_email).first():
         hashed_pw = generate_password_hash("Admin@123")
         test_user = User(username="admin", email=test_email, password=hashed_pw)
         db.session.add(test_user)
         db.session.commit()
+        logger.info("TEST USER CREATED: admin@test.com / Admin@123")
+    else:
+        logger.info("TEST USER ALREADY EXISTS")
+
+@app.route('/debug-db')
+def debug_db():
+    users = User.query.all()
+    return {"user_count": len(users), "emails": [u.email for u in users]}
 
 # Lazy model loading to avoid errors during test collection
 _model = None
