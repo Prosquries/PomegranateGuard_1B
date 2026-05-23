@@ -16,4 +16,12 @@ jobs:
       - name: Push to hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: git push --force https://Aarav18032005:$HF_TOKEN@huggingface.co/spaces/Aarav18032005/PomegranateGuard main
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          # Create an orphan branch to wipe history of deleted binaries
+          git checkout --orphan deploy-branch
+          git add -A
+          git commit -m "Deploy clean version"
+          # Push the orphan branch to HF's main
+          git push --force https://Aarav18032005:$HF_TOKEN@huggingface.co/spaces/Aarav18032005/PomegranateGuard deploy-branch:main
