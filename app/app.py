@@ -22,15 +22,25 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 # Use a static secret key for testing to avoid session resets
-app.config['SECRET_KEY'] = 'pomegranate_guard_secret_key_123'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/site.db'
+# Set up database path
+basedir = os.path.abspath(os.path.dirname(__file__))
+instance_path = os.path.join(basedir, "instance")
+
+# Ensure instance folder exists and is writable
+try:
+    os.makedirs(instance_path, exist_ok=True)
+    db_path = os.path.join(instance_path, "site.db")
+    # Test if we can write to this path
+    with open(os.path.join(instance_path, ".write_test"), "w") as f:
+        f.write("test")
+except Exception as e:
+    logger.warning(f"Instance folder not writable, falling back to /tmp: {e}")
+    db_path = "/tmp/site.db"
+
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
-
-# Ensure instance folder exists
-basedir = os.path.abspath(os.path.dirname(__file__))
-os.makedirs(os.path.join(basedir, "instance"), exist_ok=True)
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -39,16 +49,17 @@ class User(db.Model):
     password = db.Column(db.String(60), nullable=False)
 
 with app.app_context():
-    db.create_all()
-    test_email = "admin@test.com"
-    if not User.query.filter_by(email=test_email).first():
-        hashed_pw = generate_password_hash("Admin@123")
-        test_user = User(username="admin", email=test_email, password=hashed_pw)
-        db.session.add(test_user)
-        db.session.commit()
-        logger.info("TEST USER CREATED: admin@test.com / Admin@123")
-    else:
-        logger.info("TEST USER ALREADY EXISTS")
+    try:
+        db.create_all()
+        test_email = "admin@test.com"
+        if not User.query.filter_by(email=test_email).first():
+            hashed_pw = generate_password_hash("Admin@123")
+            test_user = User(username="admin", email=test_email, password=hashed_pw)
+            db.session.add(test_user)
+            db.session.commit()
+            logger.info("TEST USER CREATED")
+    except Exception as e:
+        logger.error(f"DATABASE STARTUP ERROR: {e}")
 
 @app.route('/debug-db')
 def debug_db():
