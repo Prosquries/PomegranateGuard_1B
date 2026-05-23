@@ -29,7 +29,15 @@ class User(db.Model):
 with app.app_context():
     db.create_all()
 
-model = load_model("model/pomegranate_final_model.h5")
+# Lazy model loading to avoid errors during test collection
+_model = None
+
+def get_model():
+    global _model
+    if _model is None:
+        model_path = os.path.join(os.path.dirname(__file__), "model/pomegranate_final_model.h5")
+        _model = load_model(model_path)
+    return _model
 
 def login_required(f):
     @wraps(f)
@@ -125,7 +133,7 @@ def predict():
     img_array = np.expand_dims(img_array, axis=0)
 
     # PREDICTION
-    prediction = model.predict(img_array)
+    prediction = get_model().predict(img_array)
 
     confidence = round(np.max(prediction) * 100, 2)
 
