@@ -15,10 +15,15 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['SECRET_KEY'] = 'your_secret_key_here_make_it_secure'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+# Use absolute path for the database to ensure it works correctly in Docker/HF
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(basedir, "instance", "site.db")}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+
+# Ensure instance folder exists
+os.makedirs(os.path.join(basedir, "instance"), exist_ok=True)
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
