@@ -1,44 +1,31 @@
+import os
+import logging
+import re
+from functools import wraps
+import numpy as np
 from flask import Flask, render_template, request, redirect, session, flash, url_for
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from functools import wraps
-import re
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
-import numpy as np
-import os
-
-import os
-import logging
 
 app = Flask(__name__)
 
-# Set up logging to see errors in Hugging Face logs
+# Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = app.logger
 
-UPLOAD_FOLDER = "static/uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
+# Configuration
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
-# Use a static secret key for testing to avoid session resets
-# Set up database path
+app.config['SECRET_KEY'] = 'pomegranate_guard_secret_key_123'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Database path setup
 basedir = os.path.abspath(os.path.dirname(__file__))
 instance_path = os.path.join(basedir, "instance")
-
-# Ensure instance folder exists and is writable
-try:
-    os.makedirs(instance_path, exist_ok=True)
-    db_path = os.path.join(instance_path, "site.db")
-    # Test if we can write to this path
-    with open(os.path.join(instance_path, ".write_test"), "w") as f:
-        f.write("test")
-except Exception as e:
-    logger.warning(f"Instance folder not writable, falling back to /tmp: {e}")
-    db_path = "/tmp/site.db"
-
+os.makedirs(instance_path, exist_ok=True)
+db_path = os.path.join(instance_path, "site.db")
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
@@ -48,25 +35,23 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
 
+# Ensure database and test user
 with app.app_context():
-    try:
-        db.create_all()
-        test_email = "admin@test.com"
-        if not User.query.filter_by(email=test_email).first():
-            hashed_pw = generate_password_hash("Admin@123")
-            test_user = User(username="admin", email=test_email, password=hashed_pw)
-            db.session.add(test_user)
-            db.session.commit()
-            logger.info("TEST USER CREATED")
-    except Exception as e:
-        logger.error(f"DATABASE STARTUP ERROR: {e}")
+    db.create_all()
+    test_email = "admin@test.com"
+    if not User.query.filter_by(email=test_email).first():
+        hashed_pw = generate_password_hash("Admin@123")
+        test_user = User(username="admin", email=test_email, password=hashed_pw)
+        db.session.add(test_user)
+        db.session.commit()
+        logger.info("TEST USER CREATED")
 
 @app.route('/debug-db')
 def debug_db():
     users = User.query.all()
     return {"user_count": len(users), "emails": [u.email for u in users]}
 
-# Lazy model loading to avoid errors during test collection
+# Lazy model loading
 _model = None
 
 def get_model():
