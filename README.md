@@ -1,3 +1,13 @@
+---
+title: PomegranateGuard
+emoji: 🛡️
+colorFrom: red
+colorTo: green
+sdk: docker
+app_port: 5000
+pinned: false
+---
+
 # PomegranateGuard 🛡️
 
 PomegranateGuard is a deep learning-based Full-Stack Web Application designed to detect and diagnose diseases in pomegranate fruits and leaves. Using a combination of Convolutional Neural Networks (CNN) and Transformers, the system provides high-accuracy diagnosis for common pomegranate ailments.
