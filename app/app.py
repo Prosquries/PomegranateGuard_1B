@@ -22,10 +22,15 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Database path setup
 basedir = os.path.abspath(os.path.dirname(__file__))
-instance_path = os.path.join(basedir, "instance")
-os.makedirs(instance_path, exist_ok=True)
-db_path = os.path.join(instance_path, "site.db")
+db_path = os.path.join(basedir, "instance", "site.db")
+
+# Safety Check: If we can't write to the instance folder, use /tmp
+if not os.access(os.path.dirname(db_path), os.W_OK):
+    logger.warning("Instance folder not writable, falling back to /tmp/site.db")
+    db_path = "/tmp/site.db"
+
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
@@ -36,15 +41,18 @@ class User(db.Model):
     password = db.Column(db.String(60), nullable=False)
 
 # Ensure database and test user
-with app.app_context():
-    db.create_all()
-    test_email = "admin@test.com"
-    if not User.query.filter_by(email=test_email).first():
-        hashed_pw = generate_password_hash("Admin@123")
-        test_user = User(username="admin", email=test_email, password=hashed_pw)
-        db.session.add(test_user)
-        db.session.commit()
-        logger.info("TEST USER CREATED")
+try:
+    with app.app_context():
+        db.create_all()
+        test_email = "admin@test.com"
+        if not User.query.filter_by(email=test_email).first():
+            hashed_pw = generate_password_hash("Admin@123")
+            test_user = User(username="admin", email=test_email, password=hashed_pw)
+            db.session.add(test_user)
+            db.session.commit()
+            logger.info("TEST USER READY: admin@test.com")
+except Exception as e:
+    logger.error(f"Critical Database Error: {e}")
 
 @app.route('/debug-db')
 def debug_db():

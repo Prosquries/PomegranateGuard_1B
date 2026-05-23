@@ -22,9 +22,12 @@ COPY app/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the models and the app code
-# We copy them into the container so the app can find them easily
 COPY model/ /app/model/
 COPY app/ /app/
+
+# Create necessary directories and set permissions
+RUN mkdir -p /app/instance /app/static/uploads && \
+    chmod -R 777 /app/instance /app/static/uploads
 
 # Expose the port Flask runs on
 EXPOSE 5000
