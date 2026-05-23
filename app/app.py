@@ -26,20 +26,19 @@ logger = app.logger
 
 # Configuration
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
-app.config['SECRET_KEY'] = 'pomegranate_guard_secret_key_123'
+# Use a static secret key to prevent session loss on restarts
+app.config['SECRET_KEY'] = 'pomegranate_guard_stable_secret_key_999'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Database path setup
 basedir = os.path.abspath(os.path.dirname(__file__))
 db_path = os.path.join(basedir, "instance", "site.db")
 
-# Safety Check: If we can't write to the instance folder, use /tmp
-if not os.access(os.path.dirname(db_path), os.W_OK):
-    logger.warning("Instance folder not writable, falling back to /tmp/site.db")
-    db_path = "/tmp/site.db"
+# Force writable path for Hugging Face
+db_path = "/tmp/site.db" 
+logger.info(f"USING DATABASE AT: {db_path}")
 
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
@@ -49,9 +48,8 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
 
-# Ensure database and test user
-try:
-    with app.app_context():
+def create_test_user():
+    try:
         db.create_all()
         test_email = "admin@test.com"
         if not User.query.filter_by(email=test_email).first():
@@ -59,9 +57,19 @@ try:
             test_user = User(username="admin", email=test_email, password=hashed_pw)
             db.session.add(test_user)
             db.session.commit()
-            logger.info("TEST USER READY: admin@test.com")
-except Exception as e:
-    logger.error(f"Critical Database Error: {e}")
+            return "SUCCESS: User created"
+        return "EXISTS: User already there"
+    except Exception as e:
+        return f"ERROR: {str(e)}"
+
+# Run creation on startup
+with app.app_context():
+    logger.info(f"Startup user creation: {create_test_user()}")
+
+@app.route('/force-init')
+def force_init():
+    result = create_test_user()
+    return {"status": result}
 
 @app.route('/debug-db')
 def debug_db():
