@@ -34,6 +34,13 @@ class User(db.Model):
 
 with app.app_context():
     db.create_all()
+    # Create a default test user if it doesn't exist
+    test_email = "admin@test.com"
+    if not User.query.filter_by(email=test_email).first():
+        hashed_pw = generate_password_hash("Admin@123")
+        test_user = User(username="admin", email=test_email, password=hashed_pw)
+        db.session.add(test_user)
+        db.session.commit()
 
 # Lazy model loading to avoid errors during test collection
 _model = None
