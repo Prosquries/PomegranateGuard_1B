@@ -8,9 +8,12 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
+from flasgger import Swagger
 
 # Database path setup
 basedir = os.path.abspath(os.path.dirname(__file__))
+instance_path = os.path.join(basedir, "instance")
+os.makedirs(instance_path, exist_ok=True)
 
 app = Flask(__name__, 
             template_folder=os.path.join(basedir, 'templates'),
@@ -20,12 +23,17 @@ app = Flask(__name__,
 from werkzeug.middleware.proxy_fix import ProxyFix
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
+# Initialize Flasgger
+swagger = Swagger(app)
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = app.logger
 
 # Configuration
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
+# Ensure the upload folder exists
+os.makedirs(os.path.join(basedir, app.config['UPLOAD_FOLDER']), exist_ok=True)
 # Use a static secret key to prevent session loss on restarts
 app.config['SECRET_KEY'] = 'pomegranate_guard_stable_secret_key_999'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -34,13 +42,12 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 basedir = os.path.abspath(os.path.dirname(__file__))
 db_path = os.path.join(basedir, "instance", "site.db")
 
-# Force writable path for Hugging Face
-db_path = "/tmp/site.db" 
 logger.info(f"USING DATABASE AT: {db_path}")
 
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 
-db = SQLAlchemy(app)
+db = SQLAlchemy()
+db.init_app(app)
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -68,11 +75,46 @@ with app.app_context():
 
 @app.route('/force-init')
 def force_init():
+    """
+    Force Initialize Test User
+    ---
+    tags:
+      - Utility
+    responses:
+      200:
+        description: Status of test user creation.
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+              example: "SUCCESS: User created"
+    """
     result = create_test_user()
     return {"status": result}
 
 @app.route('/debug-db')
 def debug_db():
+    """
+    Debug Database Information
+    ---
+    tags:
+      - Utility
+    responses:
+      200:
+        description: Returns user count and emails from the database.
+        schema:
+          type: object
+          properties:
+            user_count:
+              type: integer
+              example: 1
+            emails:
+              type: array
+              items:
+                type: string
+              example: ["admin@test.com"]
+    """
     users = User.query.all()
     return {"user_count": len(users), "emails": [u.email for u in users]}
 
@@ -97,6 +139,31 @@ def login_required(f):
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
+    """
+    User Login
+    ---
+    tags:
+      - Authentication
+    parameters:
+      - name: email
+        in: formData
+        type: string
+        required: true
+        description: User's email address.
+      - name: password
+        in: formData
+        type: string
+        required: true
+        description: User's password.
+    responses:
+      200:
+        description: Renders the login page (GET) or redirects to dashboard on successful login (POST).
+        schema:
+          type: string
+          format: html
+      302:
+        description: Redirects to dashboard on successful login.
+    """
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
@@ -111,6 +178,36 @@ def login():
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
+    """
+    User Registration
+    ---
+    tags:
+      - Authentication
+    parameters:
+      - name: username
+        in: formData
+        type: string
+        required: true
+        description: Desired username.
+      - name: email
+        in: formData
+        type: string
+        required: true
+        description: User's email address.
+      - name: password
+        in: formData
+        type: string
+        required: true
+        description: User's password (min 8 chars, incl. number and special char).
+    responses:
+      200:
+        description: Renders the signup page (GET) or redirects to login on successful registration (POST).
+        schema:
+          type: string
+          format: html
+      302:
+        description: Redirects to login on successful registration.
+    """
     if request.method == 'POST':
         username = request.form.get('username')
         email = request.form.get('email')
@@ -158,6 +255,26 @@ def library():
 @app.route('/predict', methods=['POST'])
 @login_required
 def predict():
+    """
+    Pomegranate Disease Prediction
+    ---
+    tags:
+      - Prediction
+    parameters:
+      - name: file
+        in: formData
+        type: file
+        required: true
+        description: Upload an image of a pomegranate for disease prediction.
+    responses:
+      200:
+        description: HTML page displaying the prediction results.
+        schema:
+          type: string
+          format: html
+      302:
+        description: Redirect to dashboard if no file is provided.
+    """
 
     file = request.files['file']
 
@@ -245,6 +362,24 @@ def symptom_checker():
 @app.route('/text-predict', methods=['POST'])
 @login_required
 def text_predict():
+    """
+    Pomegranate Disease Prediction (Text-based)
+    ---
+    tags:
+      - Prediction
+    parameters:
+      - name: symptoms
+        in: formData
+        type: string
+        required: true
+        description: A string containing the user's description of symptoms.
+    responses:
+      200:
+        description: HTML page displaying the text-based prediction results.
+        schema:
+          type: string
+          format: html
+    """
     user_text = request.form.get('symptoms', '').lower()
     
     # Simple Keyword Matching Logic
