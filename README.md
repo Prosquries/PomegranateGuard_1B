@@ -74,4 +74,4 @@ The project includes a comprehensive evaluation suite. You can find classificati
 This project is for educational and research purposes.
 
 ---
-*Created by [Lakshya Pareek](https://github.com/Lakshya-Pareek)*
+*Created by [Lakshya Pareek](https://github.com/LakshyaPareek)*
